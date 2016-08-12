@@ -1,4 +1,5 @@
 import { createAction, handleActions } from 'redux-actions';
+import { getMutableState, getImmutableState } from './helpers/state';
 
 export const LOAD = '@reduxAsyncConnect/LOAD';
 export const LOAD_SUCCESS = '@reduxAsyncConnect/LOAD_SUCCESS';
@@ -12,8 +13,7 @@ const initialState = {
   loadState: {},
 };
 
-export const reducer = handleActions({
-
+const reduxAsyncReducer = handleActions({
   [BEGIN_GLOBAL_LOAD]: (state) => ({
     ...state,
     loaded: false,
@@ -74,6 +74,15 @@ export const reducer = handleActions({
   }),
 
 }, initialState);
+
+export const reducer = function wrappedReducer(state, action) {
+  // if state is undefined then it can't be converted to mutable
+  let mutableState = state;
+  if (mutableState !== undefined) {
+    mutableState = getMutableState(state);
+  }
+  return getImmutableState(reduxAsyncReducer(mutableState, action));
+};
 
 export const clearKey = createAction(CLEAR);
 
